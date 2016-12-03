@@ -1,4 +1,8 @@
-matplotlib==1.5.3
-numpy==1.11.1
-pandas==0.18.1
-scikit-learn==0.18
+matplotlib>=1.5.3
+numpy>=1.11.2
+pandas>=0.18.1
+scikit-learn>=0.18
+pytest>=3.0.3
+click
+coverage
+flake8
