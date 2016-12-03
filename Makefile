@@ -6,6 +6,10 @@ requirements:
 data:
 	python data_quality/data/make_dataset.py
 
+## clean processed dataset
+clean-data:
+	find data/processed -name "*.csv" -exec rm {} \;
+
 ## Clean compiled files
 clean:
 	find . -name "*.pyc" -exec rm {} \;
@@ -14,4 +18,4 @@ clean:
 lint:
 	flake8 .
 
-.phony: requirements data clean
+.PHONY: requirements data clean clean-data
