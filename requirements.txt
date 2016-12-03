@@ -1,6 +1,7 @@
 matplotlib>=1.5.3
 numpy>=1.11.2
 pandas>=0.18.1
+scipy>=0.9
 scikit-learn>=0.18
 pytest>=3.0.3
 click

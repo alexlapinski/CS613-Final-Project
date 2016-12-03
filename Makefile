@@ -18,4 +18,9 @@ clean:
 lint:
 	flake8 .
 
-.PHONY: requirements data clean clean-data
+
+## Train model
+train:
+	python data_quality/train.py
+
+.PHONY: requirements data clean clean-data train
