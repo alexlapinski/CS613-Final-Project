@@ -4,7 +4,7 @@ import features.util as util
 from sklearn import svm
 from sklearn.preprocessing import Imputer
 from metrics import Metrics
-import numpy as np
+from sklearn.externals import joblib
 import os
 
 
@@ -25,28 +25,7 @@ def impute_missing_default_svm(std_training_features, std_test_features, std_ano
     actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
     test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
 
-    return test_metrics
-
-
-def drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma, nu):
-    print "Drop Missing values"
-    std_test_features = std_test_features.dropna()
-    std_training_features = std_training_features.dropna()
-    std_anomalous_features = std_anomalous_features.dropna()
-
-    clf = svm.OneClassSVM(gamma=gamma)
-    print 'One Class SVM Parameters'
-    print clf.get_params()
-    clf.fit(std_training_features)
-
-    actual_training_targets = clf.predict(std_training_features)
-    training_metrics = compute_training_metrics(actual_training_targets)
-
-    actual_test_targets = clf.predict(std_test_features)
-    actual_anomaly_targets = clf.predict(std_anomalous_features)
-    test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
-
-    return test_metrics
+    return test_metrics, clf
 
 
 def train_one_class_svm(data):
@@ -64,7 +43,8 @@ def train_one_class_svm(data):
     gamma = 0.01
     nu = 0.011
     strategy = 'most_frequent'
-    metric = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
+    metric, clf = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
+    joblib.dump(clf, 'models/impute_missing_rbf_kernel.pkl')
     print "Impute"
     print repr(metric)
 
