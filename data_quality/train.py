@@ -67,9 +67,6 @@ def train_one_class_svm(data):
     metric = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
     print "Impute"
     print repr(metric)
-    metric = drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma, nu)
-    print "Drop"
-    print repr(metric)
 
 
 def compute_training_metrics(actual_train_targets):
