@@ -1,3 +1,8 @@
+# Latex
+reports/*.aux
+reports/*.log
+reports/*.synctex.gz
+
 # Project Specific exclusions
 
 # Byte-compiled / optimized / DLL files
