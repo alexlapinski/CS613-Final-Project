@@ -9,27 +9,34 @@ import os
 
 
 def train_one_class_svm(data):
+    # Randomize Data
     randomized_data = util.randomize_data(data.normal_data)
+
+    # Split Testing / Training Data
     training_data, test_data = util.split_training_data(randomized_data)
 
+    # Split Features / Targets
     training_features, training_targets = util.split_features_target(training_data)
     test_features, test_targets = util.split_features_target(test_data)
     anomalous_features, anomalous_targets = util.split_features_target(data.anomalous_data)
 
+    # Standardize Data
     std_training_features, mean, std = util.standardize_data(training_features)
     std_test_features, _, _ = util.standardize_data(test_features, mean, std)
     std_anomalous_features, _, _ = util.standardize_data(anomalous_features, mean, std)
 
-    #
-    gamma = 0.01
-    nu = 0.011
+    # Impute missing values
     imp = Imputer(missing_values='NaN', strategy='most_frequent', axis=0)
     imp.fit(std_training_features)
 
+    # Train Model
+    gamma = 0.01
+    nu = 0.011
     clf = svm.OneClassSVM(gamma=gamma, nu=nu)
     clf.fit(imp.transform(std_training_features))
     #
 
+    # Test Model
     actual_test_targets = clf.predict(imp.transform(std_test_features))
     actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
     test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
@@ -74,5 +81,8 @@ def compute_test_metrics(actual_test_targets, actual_anomaly_targets):
 if __name__ == "__main__":
     water_treatment_filepath = os.path.join('data', 'processed', 'water-treatment.csv')
     water_treatment_data = dataset.DataSet(reader.read_water_treatment_data(water_treatment_filepath))
-    metrics, clf = train_one_class_svm(water_treatment_data)
-    joblib.dump(clf, 'models/water-treatment/impute_missing_rbf_kernel.pkl')
+    metrics, model = train_one_class_svm(water_treatment_data)
+    print "Water Treatment"
+    print "Model:", model.get_params()
+    print "Results: ", repr(metrics)
+    joblib.dump(model, 'models/water-treatment/impute_missing_rbf_kernel.pkl')
