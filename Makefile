@@ -24,6 +24,6 @@ train:
 
 ## Visualize Data
 visualize:
-	frameworkpython data_quality/visualize.py
+	frameworkpython -m data_quality.visualize
 
 .PHONY: requirements data clean clean-data train visualize
