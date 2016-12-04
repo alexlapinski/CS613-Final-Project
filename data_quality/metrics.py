@@ -7,10 +7,16 @@ class Metrics(object):
         self._num_false_negatives = num_false_negatives
 
     def compute_precision(self):
-        return self._num_true_positives / float(self._num_true_positives + self._num_false_positives)
+        denominator = float(self._num_true_positives + self._num_false_positives)
+        if denominator == 0:
+            return float('inf')
+        return self._num_true_positives / denominator
 
     def compute_recall(self):
-        return self._num_true_positives / float(self._num_true_positives + self._num_false_negatives)
+        denominator = float(self._num_true_positives + self._num_false_negatives)
+        if denominator == 0:
+            return float('inf')
+        return self._num_true_positives / denominator
 
     def compute_accuracy(self):
         numerator = (self._num_true_positives + self._num_true_negatives)

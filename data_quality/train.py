@@ -3,7 +3,60 @@ import features.dataset as dataset
 import features.util as util
 from sklearn import svm
 from sklearn.preprocessing import Imputer
+from metrics import Metrics
+import numpy as np
 import os
+
+
+def impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu):
+    print "Impute Missing values as {0}".format(strategy)
+    imp = Imputer(missing_values='NaN', strategy=strategy, axis=0)
+    imp.fit(std_training_features)
+
+    clf = svm.OneClassSVM(gamma=gamma, nu=nu)
+    print 'One Class SVM Parameters'
+    print clf.get_params()
+    clf.fit(imp.transform(std_training_features))
+
+    actual_training_targets = clf.predict(imp.transform(std_training_features))
+    training_metrics = compute_training_metrics(actual_training_targets)
+
+    actual_test_targets = clf.predict(imp.transform(std_test_features))
+    actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
+    test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
+
+    #print 'Training Metrics'
+    #print repr(training_metrics)
+
+    print 'Test Metrics'
+    print repr(test_metrics)
+    return test_metrics
+
+
+def drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma):
+    print "Drop Missing values"
+    std_test_features = std_test_features.dropna()
+    std_training_features = std_training_features.dropna()
+    std_anomalous_features = std_anomalous_features.dropna()
+
+    clf = svm.OneClassSVM(gamma=gamma)
+    print 'One Class SVM Parameters'
+    print clf.get_params()
+    clf.fit(std_training_features)
+
+    actual_training_targets = clf.predict(std_training_features)
+    training_metrics = compute_training_metrics(actual_training_targets)
+
+    actual_test_targets = clf.predict(std_test_features)
+    actual_anomaly_targets = clf.predict(std_anomalous_features)
+    test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
+
+    #print 'Training Metrics'
+    #print repr(training_metrics)
+
+    print 'Test Metrics'
+    print repr(test_metrics)
+    return test_metrics
 
 
 def train_one_class_svm(data):
@@ -18,30 +71,79 @@ def train_one_class_svm(data):
     std_test_features, _, _ = util.standardize_data(test_features, mean, std)
     std_anomalous_features, _, _ = util.standardize_data(anomalous_features, mean, std)
 
-    # Impute the missing values
-    # TODO: Try dropping rows with missing values
-    imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
-    imp.fit(std_training_features)
+    precision = []
+    recall = []
+    best_precision = 0
+    best_recall = 0
+    best_precision_gamma = 0
+    best_recall_gamma = 0
+    best_precision_nu = 0
+    best_recall_nu = 0
+    best_precision_strategy = None
+    best_recall_strategy = None
+    for gamma in np.linspace(0.01, 0.02, 100):
+        for nu in np.linspace(0.001, 1, 100):
+            for strategy in ['mean', 'median', 'most_frequent']:
+                metric = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
+
+                if metric.compute_precision() > best_precision and metric.compute_precision() < float('inf'):
+                    best_precision = metric.compute_precision()
+                    best_precision_gamma = gamma
+                    best_precision_nu = nu
+                    best_precision_strategy = strategy
+
+                if metric.compute_recall() > best_recall and metric.compute_recall() < float('inf'):
+                    best_recall = metric.compute_recall()
+                    best_recall_gamma = gamma
+                    best_recall_nu = nu
+                    best_recall_strategy = strategy
+
+                precision.append(metric.compute_precision())
+                recall.append(metric.compute_recall())
+                #drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma)
+
+    # TODO: Plot
+    print "Best Precision:", best_precision
+    print "Best Precision Gamma:", best_precision_gamma
+    print "Best Precision Nu:", best_precision_nu
+    print "Best Precision Strategy:", best_precision_strategy
+    print "Best Recall:", best_recall
+    print "Best Recall Gamma:", best_recall_gamma
+    print "Best Recall Nu:", best_recall_nu
+    print "Best Recall Strategy:", best_recall_strategy
+
+def compute_training_metrics(actual_train_targets):
+
+    # Num True positives are where the actual_test_targets were actually labeled '1'
+    num_true_positives = len(actual_train_targets[actual_train_targets == 1])
+
+    # Training data has only data of class '1', no true negatives
+    num_true_negatives = 0
+
+    # False negatives are where normal data was labeled as anomalous '-1'
+    num_false_negatives = len(actual_train_targets[actual_train_targets == -1])
+
+    # Training data has only data of class '1', no possible false positives
+    num_false_positives = 0
+
+    return Metrics(num_true_positives, num_true_negatives, num_false_positives, num_false_negatives)
 
 
-    clf = svm.OneClassSVM()
-    clf.fit(imp.transform(std_training_features))
+def compute_test_metrics(actual_test_targets, actual_anomaly_targets):
 
-    y_pred_train = clf.predict(imp.transform(std_training_features))
-    y_pred_test = clf.predict(imp.transform(std_test_features))
-    y_pred_outliers = clf.predict(imp.transform(std_anomalous_features))
-    n_error_train = y_pred_train[y_pred_train == -1].size
-    n_error_test = y_pred_test[y_pred_test == -1].size
-    n_error_outliers = y_pred_outliers[y_pred_outliers == 1].size
+    # Num True positives are where the actual_test_targets were actually labeled '1'
+    num_true_positives = len(actual_test_targets[actual_test_targets == 1])
 
-    print "n_total_train", len(std_training_features)
-    print "n_error_train", n_error_train
+    # Num True negatives are where the anomalous targets were actually '-1'
+    num_true_negatives = len(actual_anomaly_targets[actual_anomaly_targets == -1])
 
-    print "n_total_test", len(std_test_features)
-    print "n_error_test", n_error_test
+    # False negatives are where normal data was labeled as anomalous '-1'
+    num_false_negatives = len(actual_test_targets[actual_test_targets == -1])
 
-    print "n_total_outliers", len(std_anomalous_features)
-    print "n_error_outliers", n_error_outliers
+    # False positives are where anomalous data was labeled as '1'
+    num_false_positives = len(actual_anomaly_targets[actual_anomaly_targets == 1])
+
+    return Metrics(num_true_positives, num_true_negatives, num_false_positives, num_false_negatives)
 
 
 if __name__ == "__main__":
