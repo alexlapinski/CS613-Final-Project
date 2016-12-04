@@ -4,7 +4,7 @@ requirements:
 
 ## Make Dataset
 data:
-	python data_quality/data/make_dataset.py
+	python -m data_quality.data.make_dataset
 
 ## clean processed dataset
 clean-data:
