@@ -25,15 +25,10 @@ def impute_missing_default_svm(std_training_features, std_test_features, std_ano
     actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
     test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
 
-    #print 'Training Metrics'
-    #print repr(training_metrics)
-
-    print 'Test Metrics'
-    print repr(test_metrics)
     return test_metrics
 
 
-def drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma):
+def drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma, nu):
     print "Drop Missing values"
     std_test_features = std_test_features.dropna()
     std_training_features = std_training_features.dropna()
@@ -51,11 +46,6 @@ def drop_missing_default_svm(std_training_features, std_test_features, std_anoma
     actual_anomaly_targets = clf.predict(std_anomalous_features)
     test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
 
-    #print 'Training Metrics'
-    #print repr(training_metrics)
-
-    print 'Test Metrics'
-    print repr(test_metrics)
     return test_metrics
 
 
@@ -71,46 +61,16 @@ def train_one_class_svm(data):
     std_test_features, _, _ = util.standardize_data(test_features, mean, std)
     std_anomalous_features, _, _ = util.standardize_data(anomalous_features, mean, std)
 
-    precision = []
-    recall = []
-    best_precision = 0
-    best_recall = 0
-    best_precision_gamma = 0
-    best_recall_gamma = 0
-    best_precision_nu = 0
-    best_recall_nu = 0
-    best_precision_strategy = None
-    best_recall_strategy = None
-    for gamma in np.linspace(0.01, 0.02, 100):
-        for nu in np.linspace(0.001, 1, 100):
-            for strategy in ['mean', 'median', 'most_frequent']:
-                metric = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
+    gamma = 0.01
+    nu = 0.011
+    strategy = 'most_frequent'
+    metric = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
+    print "Impute"
+    print repr(metric)
+    metric = drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma, nu)
+    print "Drop"
+    print repr(metric)
 
-                if metric.compute_precision() > best_precision and metric.compute_precision() < float('inf'):
-                    best_precision = metric.compute_precision()
-                    best_precision_gamma = gamma
-                    best_precision_nu = nu
-                    best_precision_strategy = strategy
-
-                if metric.compute_recall() > best_recall and metric.compute_recall() < float('inf'):
-                    best_recall = metric.compute_recall()
-                    best_recall_gamma = gamma
-                    best_recall_nu = nu
-                    best_recall_strategy = strategy
-
-                precision.append(metric.compute_precision())
-                recall.append(metric.compute_recall())
-                #drop_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, gamma)
-
-    # TODO: Plot
-    print "Best Precision:", best_precision
-    print "Best Precision Gamma:", best_precision_gamma
-    print "Best Precision Nu:", best_precision_nu
-    print "Best Precision Strategy:", best_precision_strategy
-    print "Best Recall:", best_recall
-    print "Best Recall Gamma:", best_recall_gamma
-    print "Best Recall Nu:", best_recall_nu
-    print "Best Recall Strategy:", best_recall_strategy
 
 def compute_training_metrics(actual_train_targets):
 
