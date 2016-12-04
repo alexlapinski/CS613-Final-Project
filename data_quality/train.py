@@ -8,26 +8,6 @@ from sklearn.externals import joblib
 import os
 
 
-def impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu):
-    print "Impute Missing values as {0}".format(strategy)
-    imp = Imputer(missing_values='NaN', strategy=strategy, axis=0)
-    imp.fit(std_training_features)
-
-    clf = svm.OneClassSVM(gamma=gamma, nu=nu)
-    print 'One Class SVM Parameters'
-    print clf.get_params()
-    clf.fit(imp.transform(std_training_features))
-
-    actual_training_targets = clf.predict(imp.transform(std_training_features))
-    training_metrics = compute_training_metrics(actual_training_targets)
-
-    actual_test_targets = clf.predict(imp.transform(std_test_features))
-    actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
-    test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
-
-    return test_metrics, clf
-
-
 def train_one_class_svm(data):
     randomized_data = util.randomize_data(data.normal_data)
     training_data, test_data = util.split_training_data(randomized_data)
@@ -40,13 +20,21 @@ def train_one_class_svm(data):
     std_test_features, _, _ = util.standardize_data(test_features, mean, std)
     std_anomalous_features, _, _ = util.standardize_data(anomalous_features, mean, std)
 
+    #
     gamma = 0.01
     nu = 0.011
-    strategy = 'most_frequent'
-    metric, clf = impute_missing_default_svm(std_training_features, std_test_features, std_anomalous_features, strategy, gamma, nu)
-    joblib.dump(clf, 'models/impute_missing_rbf_kernel.pkl')
-    print "Impute"
-    print repr(metric)
+    imp = Imputer(missing_values='NaN', strategy='most_frequent', axis=0)
+    imp.fit(std_training_features)
+
+    clf = svm.OneClassSVM(gamma=gamma, nu=nu)
+    clf.fit(imp.transform(std_training_features))
+    #
+
+    actual_test_targets = clf.predict(imp.transform(std_test_features))
+    actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
+    test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
+
+    return test_metrics, clf
 
 
 def compute_training_metrics(actual_train_targets):
@@ -86,4 +74,5 @@ def compute_test_metrics(actual_test_targets, actual_anomaly_targets):
 if __name__ == "__main__":
     water_treatment_filepath = os.path.join('data', 'processed', 'water-treatment.csv')
     water_treatment_data = dataset.DataSet(reader.read_water_treatment_data(water_treatment_filepath))
-    train_one_class_svm(water_treatment_data)
+    metrics, clf = train_one_class_svm(water_treatment_data)
+    joblib.dump(clf, 'models/water-treatment/impute_missing_rbf_kernel.pkl')
