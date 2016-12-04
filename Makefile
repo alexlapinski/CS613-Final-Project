@@ -18,9 +18,12 @@ clean:
 lint:
 	flake8 .
 
-
 ## Train model
 train:
 	python data_quality/train.py
 
-.PHONY: requirements data clean clean-data train
+## Visualize Data
+visualize:
+	frameworkpython data_quality/visualize.py
+
+.PHONY: requirements data clean clean-data train visualize

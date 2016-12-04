@@ -6,10 +6,9 @@ from sklearn.preprocessing import Imputer
 from metrics import Metrics
 from sklearn.externals import joblib
 import os
-import matplotlib.pyplot as plt
 import numpy as np
-
-plt.style.use('ggplot')
+import pandas as pd
+import filesystem as fs
 
 
 def prepare_data(data):
@@ -42,22 +41,17 @@ def train_one_class_svm(data):
 
     # Train Model
 
-    # Observed 'best'
-    gamma = 0.01
+    plot_data = []
+    nu_values = []
+    for nu in np.linspace(0.0001, 1, 10):
+        nu_values.append(nu)
+        true_positive_rates = []
+        false_positive_rates = []
 
-    # Observed 'best'
-    nu = 0.011
-
-    best_nu = 0
-    best_gamma = 0
-
-    best_recall = 0
-    for nu in np.linspace(0.0001, 1, 100):
-
-        precision = []
-        recall = []
-
-        for gamma in np.linspace(0.0001, 1, 100):
+        gamma_values = []
+        for gamma in np.linspace(0.0001, 1, 10):
+            gamma_values.append(gamma)
+            print "Using Gamma={0}, Nu={1}".format(gamma, nu)
             clf = svm.OneClassSVM(gamma=gamma, nu=nu)
             clf.fit(imp.transform(std_training_features))
 
@@ -66,24 +60,27 @@ def train_one_class_svm(data):
             actual_anomaly_targets = clf.predict(imp.transform(std_anomalous_features))
             test_metrics = compute_test_metrics(actual_test_targets, actual_anomaly_targets)
 
-            if test_metrics.compute_recall() > best_recall:
-                best_gamma = gamma
-                best_nu = nu
-                best_recall = test_metrics.compute_recall()
+            true_positive_rates.append(test_metrics.compute_precision())
+            false_positive_rates.append(test_metrics.compute_recall())
 
-            precision.append(test_metrics.compute_precision())
-            recall.append(test_metrics.compute_recall())
+        data = {
+            'true_positive_rates': true_positive_rates,
+            'false_positive_rates': false_positive_rates
+        }
+        index = pd.MultiIndex.from_product([[nu], gamma_values], names=['nu', 'gamma'])
+        plot_data.append(pd.DataFrame(data, index=index))
 
-        plt.plot(precision, recall, label='nu={0}'.format(nu))
-
-    plt.plot(1.0, best_recall, label="Best Gamma={0}/Nu={1}".format(best_gamma, best_nu), marker='o', ms=3)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper right', fontsize='xx-small')
-    plt.xlabel("Precision")
-    plt.ylabel("Recall")
-    plt.title('One Class SVM; vary gamma, rbf kernel')
-    plt.savefig('reports/figures/water-treatment/one_class_svm_rbf.png')
+    save_plot_data(plot_data, dataset_name='water_treatment')
 
     return test_metrics, clf
+
+
+def save_plot_data(plot_data, dataset_name):
+    output_dir = os.path.join('data', 'visualizations', 'roc', dataset_name)
+    fs.ensure_path_exists(output_dir)
+
+    plot_df = pd.concat(plot_data)
+    plot_df.to_csv(os.path.join(output_dir, 'one_class_svm_rbf.csv'))
 
 
 def compute_training_metrics(actual_train_targets):
