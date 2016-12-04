@@ -2,6 +2,7 @@
 reports/*.aux
 reports/*.log
 reports/*.synctex.gz
+.DS_Store
 
 # Project Specific exclusions
 
