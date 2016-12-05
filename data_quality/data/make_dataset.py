@@ -41,7 +41,8 @@ def process_water_treatment(name='water-treatment'):
 
     def date_parser(date):
         return pd.datetime.strptime(date, 'D-%d/%m/%y')
-    data = pd.read_csv(data_filepath, names=columns, parse_dates=True, date_parser=date_parser)
+    data = pd.read_csv(data_filepath, names=columns, na_values='?',
+                       parse_dates=True, date_parser=date_parser)
     print 'Read {0} samples from "{1}"'.format(len(data), data_filepath)
 
     print 'Labeling raw data for {0}'.format(name)
@@ -78,7 +79,8 @@ def dataframe_to_libsvm(dataframe, name):
             label = row[row.index[-1]]
             values = row[row.index[1:-1]].values
 
-            values_as_str = [str(i)+':'+str(values[i]) for i in xrange(len(values))]
+            values_as_str = [str(i+1)+':'+str(values[i]) if str(values[i]) != 'nan' else ''
+                             for i in xrange(len(values))]
             f.write('{label} {values}\n'.format(label=label, values=' '.join(values_as_str)))
 
     return out_filepath
