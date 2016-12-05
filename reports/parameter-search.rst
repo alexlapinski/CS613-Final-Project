@@ -5,7 +5,7 @@ First use RBF Kernel & One-Class SVM (with hyperplane).
 Perform a rough-search of parameters for rbf kernel.
 parameters to search for "nu" and "gamma"
 
-Run through 10 iterations in narrowing down the best search space for nu and gamma.
+Run through 5 iterations in narrowing down the best search space for nu and gamma.
 Run through 30 steps within the parameter boundaries, cross validation such that we have training sizes of at least 50.
 Result of Rough-Search: Best Parameters w/ f1 = 0.827989498832: {'nu': 0.25, 'gamma': 0.0001220703125}
 
@@ -33,6 +33,9 @@ Best Parameters w/ f1 = 0.653157685775: {'nu': 0.045807388855747595}
 
 Do the same thing as above, but for poly kernel
 Now rather than tuning nu and gamma, we tune nu, gamma, coef and degree.
+
+Here, we don't have 30 steps for the polynomial degree, and instead look at the integer range from min to max values.
+
 
 
 ---
