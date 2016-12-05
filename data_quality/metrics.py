@@ -41,6 +41,9 @@ class Metrics(object):
         numerator = 2 * precision * recall
         denominator = precision + recall
 
+        if denominator == 0:
+            return float('inf')
+
         return numerator / float(denominator)
 
     def __repr__(self):

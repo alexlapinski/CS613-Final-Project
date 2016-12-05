@@ -32,7 +32,8 @@ def compute_test_metrics(actual_test_targets, actual_anomaly_targets):
 def execute_algorithm(dataset, kernel, nu, gamma='auto', degree=3, coef0=0.0):
 
     # Train
-    clf = svm.OneClassSVM(gamma=gamma, nu=nu)
+    clf = svm.OneClassSVM(kernel=kernel, gamma=gamma, nu=nu, degree=degree, coef0=coef0,
+                          cache_size=5000)
     clf.fit(dataset.std_training_features)
 
     # Test
@@ -129,7 +130,7 @@ def search_params_poly(datasets, nu_values, gamma_values, degree_values, coef_va
                         metrics.append(execute_algorithm(dataset, 'poly', nu, gamma, degree, coef))
                     precision, recall, f1 = compute_final_metric(metrics)
 
-                    if f1 > best_f1:
+                    if f1 > best_f1 and f1 != float('inf'):
                         best_f1 = f1
                         best_parameters = {'nu': nu,
                                            'gamma': gamma,
@@ -174,7 +175,7 @@ def iterate_search_sigmoid(coef_from_exp, coef_to_exp, datasets, gamma_from_exp,
         nu_values = np.logspace(nu_from_exp, nu_to_exp, num=search_size, base=2)
         gamma_values = np.logspace(gamma_from_exp, gamma_to_exp, num=search_size, base=2)
         coef_values = np.logspace(coef_from_exp, coef_to_exp, num=search_size, base=2)
-        print "Cross Validate, nu:2^{0}->2^{1};gamma:2^{2}->2^{3};coef:2^{6}->2^{7}" \
+        print "Cross Validate, nu:2^{0}->2^{1};gamma:2^{2}->2^{3};coef:2^{4}->2^{5}" \
             .format(nu_from_exp, nu_to_exp, gamma_from_exp, gamma_to_exp,
                     coef_from_exp, coef_to_exp)
         best_params = search_params_sigmoid(datasets, nu_values, gamma_values,
@@ -277,7 +278,7 @@ def save_params(name, rbf_params, linear_params, poly_params, sigmoid_params):
 
     out_directory = os.path.join('models', 'parameters', name)
 
-    fs.ensure_path_exists()
+    fs.ensure_path_exists(out_directory)
 
     out_filepath = os.path.join(out_directory, 'one_class_svm.json')
 
@@ -300,8 +301,8 @@ def search_water_treatment(training_set_size=50):
     :param training_set_size: size of each training dataset
     :return: nothing
     """
-    num_iterations = 5
-    search_size = 30
+    num_iterations = 7
+    search_size = 10
 
     print "Searching for Parameters for Water-Treatment Plant data"
     water_treatment_filepath = os.path.join('data', 'processed', 'water-treatment.csv')
@@ -321,10 +322,10 @@ def search_water_treatment(training_set_size=50):
     gamma_to_exp = 3
 
     # Degree - hand selected
-    degree_values = [-2, 1, 2, 3, 5]
+    degree_values = [4, 9, 19, 38, 76, 152]
 
     # Degree small to moderate size
-    coef_from_exp = -3
+    coef_from_exp = -15
     coef_to_exp = 3
 
     # Search for RBF Params, tune 'nu' and 'gamma'
@@ -333,11 +334,28 @@ def search_water_treatment(training_set_size=50):
                                     nu_from_exp, nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
+    params_filepath = save_params('water-treatment', rbf_params, None, None, None)
+    print "Wrote Best Parameters to '{0}'".format(params_filepath)
+
     # Use linear kernel, tune 'nu' only
     start_time = time.time()
     linear_params = iterate_search_linear(datasets, nu_from_exp, nu_to_exp,
                                           num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
+
+    params_filepath = save_params('water-treatment', rbf_params, linear_params, None, None)
+    print "Wrote Best Parameters to '{0}'".format(params_filepath)
+
+    # Use Sigmoid Kernel
+    # tune nu, gamma and coef
+    start_time = time.time()
+    sigmoid_params = iterate_search_sigmoid(coef_from_exp, coef_to_exp, datasets,
+                                            gamma_from_exp, gamma_to_exp,
+                                            nu_from_exp, nu_to_exp, num_iterations, search_size)
+    print "Time Elapsed: {0}\n".format(time.time() - start_time)
+
+    params_filepath = save_params('water-treatment', rbf_params, linear_params, None, sigmoid_params)
+    print "Wrote Best Parameters to '{0}'".format(params_filepath)
 
     # Use Polynomial Kernel
     # tune nu, gamma, degree and coef
@@ -346,14 +364,6 @@ def search_water_treatment(training_set_size=50):
                                             datasets, degree_values,
                                             gamma_from_exp, gamma_to_exp, nu_from_exp,
                                             nu_to_exp, num_iterations, search_size)
-    print "Time Elapsed: {0}\n".format(time.time() - start_time)
-
-    # Use Sigmoid Kernel
-    # tune nu, gamma and coef
-    start_time = time.time()
-    sigmoid_params = iterate_search_sigmoid(coef_from_exp, coef_to_exp, datasets,
-                                            degree_values, gamma_from_exp, gamma_to_exp,
-                                            nu_from_exp, nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
     params_filepath = save_params('water-treatment', rbf_params, linear_params, poly_params, sigmoid_params)
