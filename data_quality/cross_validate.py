@@ -320,8 +320,8 @@ def search_water_treatment(training_set_size=50):
     gamma_from_exp = -15
     gamma_to_exp = 3
 
-    # Degree - 14 pt range
-    degree_values = [-16, -8, -2, 0, 2, 8, 16]
+    # Degree - hand selected
+    degree_values = [-2, 1, 2, 3, 5]
 
     # Degree small to moderate size
     coef_from_exp = -3
@@ -332,7 +332,6 @@ def search_water_treatment(training_set_size=50):
     rbf_params = iterate_search_rbf(datasets, gamma_from_exp, gamma_to_exp,
                                     nu_from_exp, nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
-
 
     # Use linear kernel, tune 'nu' only
     start_time = time.time()
