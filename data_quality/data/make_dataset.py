@@ -3,6 +3,7 @@ import re
 import os
 import classify_water_treatment
 from .. import filesystem as fs
+from ..features import util
 
 
 def __read_columns(filepath):
@@ -52,7 +53,22 @@ def process_water_treatment(name='water-treatment'):
     labeled_data.to_csv(output_filepath)
 
     libsvm_data_filepath = dataframe_to_libsvm(labeled_data, name)
-    print 'Wrote libsvm data {0} data to "{1}"'.format(name, libsvm_data_filepath)
+    print 'Wrote libsvm all data for {0} to "{1}"'.format(name, libsvm_data_filepath)
+
+    # Split anomalous data and test data to separate dataframe
+    normal_data = labeled_data[labeled_data['label'] == 1]
+    anomalous_data = labeled_data[labeled_data['label'] == -1]
+
+    training_data, test_data = util.split_training_data(normal_data)
+    test_data = pd.concat([test_data, anomalous_data])
+
+    training_data_name = '{0}_training'.format(name)
+    libsvm_training_data_filepath = dataframe_to_libsvm(training_data, training_data_name)
+    print 'Wrote libsvm training data for {0} to "{1}"'.format(name, libsvm_training_data_filepath)
+
+    test_data_name = '{0}_test'.format(name)
+    libsvm_test_data_filepath = dataframe_to_libsvm(test_data, test_data_name)
+    print 'Wrote libsvm test data for {0} to "{1}"'.format(name, libsvm_test_data_filepath)
     print ""
 
 
