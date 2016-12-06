@@ -14,7 +14,7 @@ __columns = [
 
 def process_banknote(name='data_banknote_authentication'):
     """
-    Process the water treatment raw dataset.
+    Process the banknote raw dataset.
     :param name: name of the dataset
     :return: None
     """
