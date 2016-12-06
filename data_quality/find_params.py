@@ -30,6 +30,16 @@ def compute_test_metrics(actual_test_targets, actual_anomaly_targets):
 
 
 def execute_algorithm(data, kernel, nu, gamma='auto', degree=3, coef0=0.0):
+    """
+    Execute the One-Class SVM (Training and Testing)
+    :param data: Entire dataset
+    :param kernel: kernel ('linear', 'poly', 'rbf', or 'sigmoid')
+    :param nu: nu parameter for one-class svm
+    :param gamma:
+    :param degree:
+    :param coef0:
+    :return: metrics from evaluation
+    """
 
     # Train
     clf = svm.OneClassSVM(kernel=kernel, gamma=gamma, nu=nu, degree=degree, coef0=coef0,
@@ -297,25 +307,23 @@ def save_params(name, rbf_params, linear_params, poly_params, sigmoid_params):
     return out_filepath
 
 
-def search_water_treatment(training_set_size=50):
+def search_params(data, name, training_set_size=50):
     """
-    Use the water-treatment dataset and search for optimal parameters
+    Use the given dataset and search for optimal parameters
+    :param data: One-Class Dataset
+    :param name: name of the dataset for saving params
     :param training_set_size: size of each training dataset
     :return: nothing
     """
     num_iterations = 10
     search_size = 3
 
-    print "Searching for Parameters for Water-Treatment Plant data"
-    water_treatment_filepath = os.path.join('data', 'processed', 'water-treatment.csv')
-    water_treatment_data = dataset.OneClassDataSet(reader.read_water_treatment_data(water_treatment_filepath))
-
     # Pick a num_folds that gives us at least 'training_set_size' in a training set
-    num_folds = len(water_treatment_data.normal_data) / training_set_size
+    num_folds = len(data.normal_data) / training_set_size
     print "Using {0} Folds for Cross Validation".format(num_folds)
 
     # Create our Cross-Validation datasets
-    datasets = prep.create_cross_validation_data(water_treatment_data, num_folds)
+    datasets = prep.create_cross_validation_data(data, num_folds)
 
     # NuValues and GammaValues initial range taken from libsvm 'guide' pdf
     nu_from_exp = -2
@@ -324,7 +332,7 @@ def search_water_treatment(training_set_size=50):
     gamma_from_exp = -15
     gamma_to_exp = 3
 
-    # Degree - hand selected
+    # Degree - hand selected (anything larger and python chokes)
     degree_values = [1, 2, 3]
 
     # Degree small to moderate size
@@ -337,7 +345,7 @@ def search_water_treatment(training_set_size=50):
                                     nu_from_exp, nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
-    params_filepath = save_params('water-treatment', rbf_params, None, None, None)
+    params_filepath = save_params(name, rbf_params, None, None, None)
     print "Wrote Best Parameters to '{0}'".format(params_filepath)
 
     # Use linear kernel, tune 'nu' only
@@ -346,7 +354,7 @@ def search_water_treatment(training_set_size=50):
                                           num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
-    params_filepath = save_params('water-treatment', rbf_params, linear_params, None, None)
+    params_filepath = save_params(name, rbf_params, linear_params, None, None)
     print "Wrote Best Parameters to '{0}'".format(params_filepath)
 
     # Use Sigmoid Kernel
@@ -357,7 +365,7 @@ def search_water_treatment(training_set_size=50):
                                             nu_from_exp, nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
-    params_filepath = save_params('water-treatment', rbf_params, linear_params, None, sigmoid_params)
+    params_filepath = save_params(name, rbf_params, linear_params, None, sigmoid_params)
     print "Wrote Best Parameters to '{0}'".format(params_filepath)
 
     # Use Polynomial Kernel
@@ -369,9 +377,15 @@ def search_water_treatment(training_set_size=50):
                                             nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
-    params_filepath = save_params('water-treatment', rbf_params, linear_params, poly_params, sigmoid_params)
+    params_filepath = save_params(name, rbf_params, linear_params, poly_params, sigmoid_params)
     print "Wrote Best Parameters to '{0}'".format(params_filepath)
 
-if __name__ == "__main__":
 
-    search_water_treatment()
+if __name__ == "__main__":
+    print "Searching for Parameters for Water-Treatment Plant data"
+    water_treatment_data = reader.read_water_treatment_data()
+    search_params(water_treatment_data, name='water-treatment')
+
+    print "Searching for Parameters for Banknote data"
+    banknote_data = reader.read_banknote_data()
+    search_params(banknote_data, name='banknote')

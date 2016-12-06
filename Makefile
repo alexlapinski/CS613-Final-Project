@@ -22,8 +22,12 @@ lint:
 train:
 	python data_quality/train.py
 
+## Find Parameters
+params:
+	python -m data_quality.find_params
+
 ## Visualize Data
 visualize:
 	frameworkpython -m data_quality.visualize
 
-.PHONY: requirements data clean clean-data train visualize
+.PHONY: requirements data clean clean-data train visualize find_params
