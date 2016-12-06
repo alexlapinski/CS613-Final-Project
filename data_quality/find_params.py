@@ -302,7 +302,7 @@ def save_params(name, rbf_params, linear_params, poly_params, sigmoid_params):
     }
 
     with open(out_filepath, 'w') as out_file:
-        out_file.write(json.dumps(params))
+        out_file.write(json.dumps(params, sort_keys=True, indent=4, separators=(',', ':')))
 
     return out_filepath
 
