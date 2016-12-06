@@ -1,7 +1,10 @@
 import os
 import pandas as pd
 import util as datautil
-from ..features import util
+
+
+def read_file(filepath):
+    return pd.read_csv(filepath, index_col=[0, 1, 2])
 
 
 def get_filenames():
@@ -21,7 +24,7 @@ def get_filenames():
 def read_training_data(filepaths):
     training_dataframes = []
     for data_filepath in filepaths:
-        data = pd.read_csv(data_filepath)
+        data = read_file(data_filepath)
         print 'Read {0} samples from "{1}"'.format(len(data), data_filepath)
 
         training_dataframes.append(data)
@@ -59,7 +62,7 @@ def process_hdd(name='hdd'):
     training_data = read_training_data(training_data_filepaths)
 
     # Process Test Data
-    test_data = pd.read_csv(test_data_filepath)
+    test_data = read_file(test_data_filepath)
     print 'Read {0} test samples from "{1}"'.format(test_data.size, test_data_filepath)
 
     print 'Labeling raw data for {0}'.format(name)
