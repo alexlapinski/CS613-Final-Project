@@ -29,16 +29,16 @@ def compute_test_metrics(actual_test_targets, actual_anomaly_targets):
                    num_false_positives, num_false_negatives)
 
 
-def execute_algorithm(dataset, kernel, nu, gamma='auto', degree=3, coef0=0.0):
+def execute_algorithm(data, kernel, nu, gamma='auto', degree=3, coef0=0.0):
 
     # Train
     clf = svm.OneClassSVM(kernel=kernel, gamma=gamma, nu=nu, degree=degree, coef0=coef0,
-                          cache_size=5000)
-    clf.fit(dataset.std_training_features)
+                          cache_size=200)
+    clf.fit(data.std_training_features)
 
     # Test
-    actual_test_targets = clf.predict(dataset.std_test_features)
-    actual_anomaly_targets = clf.predict(dataset.std_anomaly_features)
+    actual_test_targets = clf.predict(data.std_test_features)
+    actual_anomaly_targets = clf.predict(data.std_anomaly_features)
     return compute_test_metrics(actual_test_targets, actual_anomaly_targets)
 
 
@@ -121,13 +121,15 @@ def search_params_poly(datasets, nu_values, gamma_values, degree_values, coef_va
 
     best_f1 = 0
     best_parameters = {'nu': 0, 'gamma': 0, 'degree': 0, 'coef': 0}
-    for nu in nu_values:
-        for gamma in gamma_values:
-            for degree in degree_values:
+    for degree in degree_values:
+        for nu in nu_values:
+            for gamma in gamma_values:
                 for coef in coef_values:
                     metrics = []
+                    i = 0
                     for dataset in datasets:
                         metrics.append(execute_algorithm(dataset, 'poly', nu, gamma, degree, coef))
+                        i += 1
                     precision, recall, f1 = compute_final_metric(metrics)
 
                     if f1 > best_f1 and f1 != float('inf'):
@@ -223,7 +225,7 @@ def iterate_search_polynomial(coef_from_exp, coef_to_exp, datasets, degree_value
         degree = best_params['degree']
         degree_from = degree - 1
         degree_to = degree + 1
-        degree_values = np.arange(degree_from, degree_to)
+        degree_values = np.arange(degree_from, degree_to+1, step=1)
 
         coef_exponent = math.log(best_params['coef'], 2)
         coef_from_exp = coef_exponent - 1
@@ -301,8 +303,8 @@ def search_water_treatment(training_set_size=50):
     :param training_set_size: size of each training dataset
     :return: nothing
     """
-    num_iterations = 7
-    search_size = 10
+    num_iterations = 10
+    search_size = 3
 
     print "Searching for Parameters for Water-Treatment Plant data"
     water_treatment_filepath = os.path.join('data', 'processed', 'water-treatment.csv')
@@ -310,6 +312,7 @@ def search_water_treatment(training_set_size=50):
 
     # Pick a num_folds that gives us at least 'training_set_size' in a training set
     num_folds = len(water_treatment_data.normal_data) / training_set_size
+    print "Using {0} Folds for Cross Validation".format(num_folds)
 
     # Create our Cross-Validation datasets
     datasets = prep.create_cross_validation_data(water_treatment_data, num_folds)
@@ -322,7 +325,7 @@ def search_water_treatment(training_set_size=50):
     gamma_to_exp = 3
 
     # Degree - hand selected
-    degree_values = [4, 9, 19, 38, 76, 152]
+    degree_values = [1, 2, 3]
 
     # Degree small to moderate size
     coef_from_exp = -15
