@@ -11,6 +11,8 @@ import pandas as pd
 import filesystem as fs
 
 
+# TODO: Completely re-write this file
+
 def train_one_class_svm(data):
 
     imp, std_training_features, std_test_features, std_anomalous_features = prepare_data(data)
