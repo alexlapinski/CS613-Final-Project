@@ -27,3 +27,31 @@ def read_banknote_data(filepath=None):
 
     df = pd.read_csv(filepath)
     return dataset.OneClassDataSet(df)
+
+
+def read_hdd_training_data(filepath=None):
+    """
+    Read the processed hdd training data
+    :param filepath: optional filepath (default: data/processed/hdd_training.csv)
+    :return: One-Class Dataset
+    """
+
+    if filepath is None:
+        filepath = os.path.join('data', 'processed', 'hdd_training.csv')
+
+    df = pd.read_csv(filepath)
+    return dataset.OneClassDataSet(df)
+
+
+def read_hdd_test_data(filepath=None):
+    """
+    Read the processed hdd test data
+    :param filepath: optional filepath (default: data/processed/hdd_test.csv)
+    :return: One-Class Dataset
+    """
+
+    if filepath is None:
+        filepath = os.path.join('data', 'processed', 'hdd_test.csv')
+
+    df = pd.read_csv(filepath)
+    return dataset.OneClassDataSet(df)

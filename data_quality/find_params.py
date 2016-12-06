@@ -389,3 +389,7 @@ if __name__ == "__main__":
     print "Searching for Parameters for Banknote data"
     banknote_data = reader.read_banknote_data()
     search_params(banknote_data, name='banknote')
+
+    print "Searching for Parameters for HDD data"
+    hdd_data = reader.read_hdd_training_data()
+    search_params(hdd_data, name='hdd')
