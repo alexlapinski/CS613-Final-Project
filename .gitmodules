@@ -1,0 +1,3 @@
+[submodule "libsvm"]
+	path = libsvm
+	url = git@github.com:alexlapinski/libsvm-svdd.git

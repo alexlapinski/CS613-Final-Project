@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+LIBSVM_PATH=`pwd`/../libsvm/
+LIBSVM_TOOLS_PATH=`pwd`/../libsvm/tools
+START_PATH=`pwd`
+
 # Change Directory to where libsvm tools exist
 cd ${LIBSVM_TOOLS_PATH}
 
