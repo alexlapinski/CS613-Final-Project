@@ -194,7 +194,7 @@ def iterate_search_sigmoid(coef_from_exp, coef_to_exp, datasets, gamma_from_exp,
                                             coef_values)
         nu_exponent = math.log(best_params['nu'], 2)
         nu_from_exp = nu_exponent - 1
-        nu_to_exp = nu_exponent + 1
+        nu_to_exp = cap_nu_parameter(nu_exponent + 1)
 
         gamma_exponent = math.log(best_params['gamma'], 2)
         gamma_from_exp = gamma_exponent - 1
@@ -226,7 +226,7 @@ def iterate_search_polynomial(coef_from_exp, coef_to_exp, datasets, degree_value
                                          degree_values, coef_values)
         nu_exponent = math.log(best_params['nu'], 2)
         nu_from_exp = nu_exponent - 1
-        nu_to_exp = nu_exponent + 1
+        nu_to_exp = cap_nu_parameter(nu_exponent + 1)
 
         gamma_exponent = math.log(best_params['gamma'], 2)
         gamma_from_exp = gamma_exponent - 1
@@ -252,7 +252,7 @@ def iterate_search_linear(datasets, nu_from_exp, nu_to_exp, num_iterations, sear
         best_params = search_params_linear(datasets, nu_values)
         nu_exponent = math.log(best_params['nu'], 2)
         nu_from_exp = nu_exponent - 1
-        nu_to_exp = nu_exponent + 1
+        nu_to_exp = cap_nu_parameter(nu_exponent + 1)
 
     return best_params
 
@@ -268,13 +268,27 @@ def iterate_search_rbf(datasets, gamma_from_exp, gamma_to_exp, nu_from_exp, nu_t
         best_params = search_params_rbf(datasets, nu_values, gamma_values)
         nu_exponent = math.log(best_params['nu'], 2)
         nu_from_exp = nu_exponent - 1
-        nu_to_exp = nu_exponent + 1
+        nu_to_exp = cap_nu_parameter(nu_exponent + 1)
 
         gamma_exponent = math.log(best_params['gamma'], 2)
         gamma_from_exp = gamma_exponent - 1
         gamma_to_exp = gamma_exponent + 1
 
     return best_params
+
+
+def cap_nu_parameter(nu_exp):
+    """
+    Nu has to be less than 1, this will adjust the exponent to
+    ensure nu does not exceed 1
+    :param nu:
+    :return:
+    """
+
+    if 2**nu_exp > 1:
+        return 0
+
+    return nu_exp
 
 
 def save_params(name, rbf_params, linear_params, poly_params, sigmoid_params):
@@ -316,7 +330,7 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
     :return: nothing
     """
     num_iterations = 3
-    search_size = 30
+    search_size = 10
 
     # Pick a num_folds that gives us at least 'training_set_size' in a training set
     if normal_data_sample_size is None:
@@ -344,6 +358,7 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
 
     # Search for RBF Params, tune 'nu' and 'gamma'
     start_time = time.time()
+    print "\n## Searching for RBF Kernel Parameters"
     rbf_params = iterate_search_rbf(datasets, gamma_from_exp, gamma_to_exp,
                                     nu_from_exp, nu_to_exp, num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
@@ -353,6 +368,7 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
 
     # Use linear kernel, tune 'nu' only
     start_time = time.time()
+    print "\n## Searching for Linear Kernel Parameters"
     linear_params = iterate_search_linear(datasets, nu_from_exp, nu_to_exp,
                                           num_iterations, search_size)
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
@@ -363,6 +379,7 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
     # Use Sigmoid Kernel
     # tune nu, gamma and coef
     start_time = time.time()
+    print "\n## Searching for Sigmoid Kernel Parameters"
     sigmoid_params = iterate_search_sigmoid(coef_from_exp, coef_to_exp, datasets,
                                             gamma_from_exp, gamma_to_exp,
                                             nu_from_exp, nu_to_exp, num_iterations, search_size)
@@ -374,6 +391,7 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
     # Use Polynomial Kernel
     # tune nu, gamma, degree and coef
     start_time = time.time()
+    print "\n## Searching for Polynomial Kernel Parameters"
     poly_params = iterate_search_polynomial(coef_from_exp, coef_to_exp,
                                             datasets, degree_values,
                                             gamma_from_exp, gamma_to_exp, nu_from_exp,
