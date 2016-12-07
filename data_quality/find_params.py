@@ -396,6 +396,6 @@ if __name__ == "__main__":
     print "# Searching for Parameters for HDD data"
     hdd_data = reader.read_hdd_training_data()
     search_params(hdd_data, name='hdd',
-                  training_set_size=1000,
-                  normal_data_sample_size=50000,
-                  anomalous_data_sample_size=50000)
+                  training_set_size=500,
+                  normal_data_sample_size=5000,
+                  anomalous_data_sample_size=5000)
