@@ -307,7 +307,7 @@ def save_params(name, rbf_params, linear_params, poly_params, sigmoid_params):
     return out_filepath
 
 
-def search_params(data, name, training_set_size=50):
+def search_params(data, name, training_set_size=50, normal_data_sample_size=None, anomalous_data_sample_size=None):
     """
     Use the given dataset and search for optimal parameters
     :param data: One-Class Dataset
@@ -319,11 +319,11 @@ def search_params(data, name, training_set_size=50):
     search_size = 3
 
     # Pick a num_folds that gives us at least 'training_set_size' in a training set
-    num_folds = len(data.normal_data) / training_set_size
+    num_folds = min(normal_data_sample_size, len(data.normal_data)) / training_set_size
     print "Using {0} Folds for Cross Validation".format(num_folds)
 
     # Create our Cross-Validation datasets
-    datasets = prep.create_cross_validation_data(data, num_folds)
+    datasets = prep.create_cross_validation_data(data, num_folds, normal_data_sample_size, anomalous_data_sample_size)
 
     # NuValues and GammaValues initial range taken from libsvm 'guide' pdf
     nu_from_exp = -2
@@ -392,4 +392,7 @@ if __name__ == "__main__":
 
     print "Searching for Parameters for HDD data"
     hdd_data = reader.read_hdd_training_data()
-    search_params(hdd_data, name='hdd')
+    search_params(hdd_data, name='hdd',
+                  training_set_size=1000,
+                  normal_data_sample_size=10000,
+                  anomalous_data_sample_size=10000)
