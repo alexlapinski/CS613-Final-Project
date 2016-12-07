@@ -29,6 +29,11 @@ def read_banknote_data(filepath=None):
     return dataset.OneClassDataSet(df)
 
 
+def __read_hdd_data(filepath):
+    df = pd.read_csv(filepath, index_col=[0, 1])
+    return dataset.OneClassDataSet(df)
+
+
 def read_hdd_training_data(filepath=None):
     """
     Read the processed hdd training data
@@ -39,8 +44,7 @@ def read_hdd_training_data(filepath=None):
     if filepath is None:
         filepath = os.path.join('data', 'processed', 'hdd_training.csv')
 
-    df = pd.read_csv(filepath)
-    return dataset.OneClassDataSet(df)
+    return __read_hdd_data(filepath)
 
 
 def read_hdd_test_data(filepath=None):
@@ -53,5 +57,4 @@ def read_hdd_test_data(filepath=None):
     if filepath is None:
         filepath = os.path.join('data', 'processed', 'hdd_test.csv')
 
-    df = pd.read_csv(filepath)
-    return dataset.OneClassDataSet(df)
+    return __read_hdd_data(filepath)

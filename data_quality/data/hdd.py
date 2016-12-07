@@ -4,16 +4,23 @@ import util as datautil
 
 
 def read_file(filepath):
-    return pd.read_csv(filepath, index_col=[0, 1, 2])
+    df = pd.read_csv(filepath, index_col=[0, 1, 2])
+
+    # Drop the date (1st level) of multiindex
+    df.index = df.index.droplevel()
+
+    return df
 
 
-def get_filenames():
+def get_filenames(data_directory=None):
     """
     Since the HDD data is by day, we can have multiple days of data.
+    :param data_directory: Directory of raw data files (default: data/raw/hdd)
     :return: List of file paths to read data
     """
 
-    data_directory = os.path.join('data', 'raw', 'hdd')
+    if data_directory is None:
+        data_directory = os.path.join('data', 'raw', 'hdd')
 
     return [os.path.join(data_directory, f) for f in os.listdir(data_directory)
             if os.path.isfile(os.path.join(data_directory, f))
@@ -40,6 +47,60 @@ def label_data(dataframe):
     return labeled_data.drop('failure', 1)
 
 
+def try_convert_hexadecimal_to_decimal(x):
+    """
+    Try to convert the input string x from a hexadecimal string to a decimal string.
+    Return the original string if it fails
+    :param x: input string
+    :return: hexadecimal string, or original string
+    """
+    try:
+        return int(x, 16)
+    except:
+        pass
+    return x
+
+
+def convert_raw_columns(df):
+    """
+    Convert all columns that end with '_raw' to from hexadecimal to decimal
+    :param df:
+    :return:
+    """
+
+    raw_columns = [col for col in df.columns if col.endswith('_raw')]
+
+    for col in raw_columns:
+        df[col] = df[col].apply(try_convert_hexadecimal_to_decimal)
+
+    return df
+
+
+def filter_columns(all_columns):
+    """
+    Get the select sub-set of columns to use in training
+    :return:
+    """
+    #
+    # During data exploration (of 2016-04-01.csv), it was found that the following columns
+    # had a standard deviation of 0, Therefore, we will just filter these columns out and
+    # not train / test on this data
+    #
+    zero_std_columns = ['smart_22_normalized',
+                        'smart_22_raw',
+                        'smart_188_normalized',
+                        'smart_220_normalized',
+                        'smart_220_raw',
+                        'smart_224_normalized',
+                        'smart_224_raw',
+                        'smart_226_normalized',
+                        'smart_250_normalized',
+                        'smart_251_normalized',
+                        'smart_254_raw']
+
+    return [col for col in all_columns if col not in zero_std_columns]
+
+
 def process_hdd(name='hdd'):
     """
     Process the HDD raw dataset.
@@ -57,7 +118,6 @@ def process_hdd(name='hdd'):
     test_output_filepath = os.path.join('data', 'processed', '{0}_test.csv'.format(name))
 
     print 'Processing the "{0}" dataset'.format(name)
-
     # Process Training Data
     training_data = read_training_data(training_data_filepaths)
 
@@ -65,9 +125,18 @@ def process_hdd(name='hdd'):
     test_data = read_file(test_data_filepath)
     print 'Read {0} test samples from "{1}"'.format(test_data.size, test_data_filepath)
 
+    # Exclude some columns (zero std)
+    valid_columns = filter_columns(training_data.columns)
+    training_data = training_data[valid_columns]
+    test_data = test_data[valid_columns]
+
     print 'Labeling raw data for {0}'.format(name)
     labeled_training_data = label_data(training_data)
     labeled_test_data = label_data(test_data)
+
+    print 'Convert hexadecimal values for {0}'.format(name)
+    labeled_training_data = convert_raw_columns(labeled_training_data)
+    labeled_test_data = convert_raw_columns(labeled_test_data)
 
     print 'Writing processed {0} training data to "{1}"'.format(name, training_output_filepath)
     labeled_training_data.to_csv(training_output_filepath)

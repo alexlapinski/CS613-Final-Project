@@ -1,0 +1,17 @@
+Date – The date of the file in yyyy-mm-dd format.
+Serial Number – The manufacturer-assigned serial number of the drive.
+Model – The manufacturer-assigned model number of the drive.
+Capacity – The drive capacity in bytes.
+Failure – Contains a “0” if the drive is OK. Contains a “1” if this is the last day the drive was operational before failing.
+2013-2014 SMART Stats – 80 columns of data, that are the Raw and Normalized values for 40 different SMART stats as reported by the given drive. Each value is the number reported by the drive.
+2015 SMART Stats – 90 columns of data, that are the Raw and Normalized values for 45 different SMART stats as reported by the given drive. Each value is the number reported by the drive.
+
+source: https://www.backblaze.com/b2/hard-drive-test-data.html
+
+
+
+"Normalized value", commonly referred to as just "value". This is a most universal measurement, on the scale from 0 (bad) to some maximum (good) value. Maximum values are typically 100, 200 or 253. Rule of thumb is: high values are good, low values are bad.
+"Threshold" - the minimum normalized value limit for the attribute. If the normalized value falls below the threshold, the disk is considered defective and should be replaced under warranty. This situation is called "T.E.C." (Threshold Exceeded Condition).
+"Raw value" - the value of the attribute as it is tracked by the device, before any normalization takes place. Some raw numbers provide valuable insight when properly interpreted. These cases will be discussed later on. Raw values are typically listed in hexadecimal numbers.
+
+source: http://www.z-a-recovery.com/manual/smart.aspx
