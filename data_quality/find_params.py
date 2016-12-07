@@ -315,11 +315,14 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
     :param training_set_size: size of each training dataset
     :return: nothing
     """
-    num_iterations = 10
-    search_size = 3
+    num_iterations = 3
+    search_size = 30
 
     # Pick a num_folds that gives us at least 'training_set_size' in a training set
-    num_folds = min(normal_data_sample_size, len(data.normal_data)) / training_set_size
+    if normal_data_sample_size is None:
+        num_folds = len(data.normal_data) / training_set_size
+    else:
+        num_folds = min(normal_data_sample_size, len(data.normal_data)) / training_set_size
     print "Using {0} Folds for Cross Validation".format(num_folds)
 
     # Create our Cross-Validation datasets
