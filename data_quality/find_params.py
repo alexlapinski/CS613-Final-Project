@@ -385,17 +385,17 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
 
 
 if __name__ == "__main__":
-    print "Searching for Parameters for Water-Treatment Plant data"
+    print "# Searching for Parameters for Water-Treatment Plant data"
     water_treatment_data = reader.read_water_treatment_data()
     search_params(water_treatment_data, name='water-treatment')
 
-    print "Searching for Parameters for Banknote data"
+    print "# Searching for Parameters for Banknote data"
     banknote_data = reader.read_banknote_data()
     search_params(banknote_data, name='banknote')
 
-    print "Searching for Parameters for HDD data"
+    print "# Searching for Parameters for HDD data"
     hdd_data = reader.read_hdd_training_data()
     search_params(hdd_data, name='hdd',
                   training_set_size=1000,
-                  normal_data_sample_size=10000,
-                  anomalous_data_sample_size=10000)
+                  normal_data_sample_size=50000,
+                  anomalous_data_sample_size=50000)
