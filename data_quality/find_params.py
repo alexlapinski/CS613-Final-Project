@@ -349,7 +349,7 @@ def search_params(data, name, training_set_size=50, normal_data_sample_size=None
     print "Time Elapsed: {0}\n".format(time.time() - start_time)
 
     params_filepath = save_params(name, rbf_params, None, None, None)
-    print "Wrote Best Parameters to '{0}'".format(params_filepath)
+    print "Wrote Best Parameters to '{0}'\n".format(params_filepath)
 
     # Use linear kernel, tune 'nu' only
     start_time = time.time()
