@@ -5,21 +5,23 @@ How to Run
 ----------
 
 One Class SVM (All Python)
+* Install Dependencies
+** make requirements
+* Prepare Data
+** make data
+* Find best parameters
+** make params
+* Test / Train SVM
+** make train
 
 SVDD (patched libsvm)
-* cd libsvm
-* make
-* cd ../libsvm/scripts
-* sh banknote.sh
-* sh water-treatment.sh
-
-Submission
-----------
-As per the final project specifications document, upload a single zip file containing:
-
-* Presentation
-* Paper (Latex)
-* Source Code
-* Readme (how to run)
-* I don't need your data (for now) but I may ask for it if I find inconsistancies.
-* Presentation Video
+* Compile libsvm
+** cd libsvm
+** make
+* Prepare Data
+** cd ../data
+* Run Bash Scripts to test
+** cd ../libsvm-scripts
+** sh banknote.sh
+** sh water-treatment.sh
+** sh hdd.sh
