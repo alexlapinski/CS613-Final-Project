@@ -20,7 +20,7 @@ lint:
 
 ## Train model
 train:
-	python data_quality/train.py
+	python -m data_quality.train
 
 ## Find Parameters
 params:

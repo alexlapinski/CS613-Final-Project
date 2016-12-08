@@ -2,10 +2,23 @@
 
 class OneClassDataSet(object):
 
-    def __init__(self, dataframe, normal_label=1, anomaly_label=-1):
-        self._anomalies = dataframe.loc[dataframe['label'] == anomaly_label]
-        self._normal_data = dataframe.loc[dataframe['label'] == normal_label]
+    def __init__(self, dataframe, normal_label=1, anomaly_label=-1, max_normal_samples=None, max_anomalous_samples=None):
 
+        if max_anomalous_samples is None:
+            self._anomalies = dataframe.loc[dataframe['label'] == anomaly_label]
+        else:
+            anomalous_samples = dataframe.loc[dataframe['label'] == anomaly_label]
+            max_normal_samples = min(len(anomalous_samples), max_anomalous_samples)
+            self._anomalies = anomalous_samples.sample(max_anomalous_samples)
+
+        if max_normal_samples is None:
+            self._normal_data = dataframe.loc[dataframe['label'] == normal_label]
+        else:
+            normal_samples = dataframe.loc[dataframe['label'] == normal_label]
+            max_normal_samples = min(len(normal_samples), max_normal_samples)
+            self._normal_data = normal_samples.sample(max_normal_samples)
+
+        assert len(self._anomalies) > 0, "We should have at least one anomalous sample"
 
     @property
     def anomalous_data(self):
