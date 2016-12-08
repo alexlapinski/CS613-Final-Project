@@ -31,7 +31,8 @@ def read_banknote_data(filepath=None):
 
 def __read_hdd_data(filepath, max_normal_samples=None, max_anomalous_samples=None):
     df = pd.read_csv(filepath, index_col=[0, 1])
-    return dataset.OneClassDataSet(df, max_normal_samples, max_anomalous_samples)
+    return dataset.OneClassDataSet(df, max_normal_samples=max_normal_samples,
+                                   max_anomalous_samples= max_anomalous_samples)
 
 
 def read_hdd_training_data(filepath=None, max_normal_samples=None, max_anomalous_samples=None):
