@@ -1,5 +1,6 @@
 from daterange import DateRange
 
+# Class 1: Normal situation
 class_1 = [DateRange('D-1/3/90', 'D-12/3/90'), DateRange('D-16/3/90', 'D-30/3/90'),
            DateRange('D-1/2/90', 'D-19/2/90'), DateRange('D-21/2/90', 'D-28/2/90'),
            DateRange('D-1/1/90', 'D-26/1/90'), DateRange('D-29/1/90', 'D-31/1/90'),

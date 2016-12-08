@@ -29,12 +29,12 @@ def read_banknote_data(filepath=None):
     return dataset.OneClassDataSet(df)
 
 
-def __read_hdd_data(filepath):
+def __read_hdd_data(filepath, max_normal_samples=None, max_anomalous_samples=None):
     df = pd.read_csv(filepath, index_col=[0, 1])
-    return dataset.OneClassDataSet(df)
+    return dataset.OneClassDataSet(df, max_normal_samples, max_anomalous_samples)
 
 
-def read_hdd_training_data(filepath=None):
+def read_hdd_training_data(filepath=None, max_normal_samples=None, max_anomalous_samples=None):
     """
     Read the processed hdd training data
     :param filepath: optional filepath (default: data/processed/hdd_training.csv)
@@ -44,10 +44,10 @@ def read_hdd_training_data(filepath=None):
     if filepath is None:
         filepath = os.path.join('data', 'processed', 'hdd_training.csv')
 
-    return __read_hdd_data(filepath)
+    return __read_hdd_data(filepath, max_normal_samples, max_anomalous_samples)
 
 
-def read_hdd_test_data(filepath=None):
+def read_hdd_test_data(filepath=None, max_normal_samples=None, max_anomalous_samples=None):
     """
     Read the processed hdd test data
     :param filepath: optional filepath (default: data/processed/hdd_test.csv)
@@ -57,4 +57,4 @@ def read_hdd_test_data(filepath=None):
     if filepath is None:
         filepath = os.path.join('data', 'processed', 'hdd_test.csv')
 
-    return __read_hdd_data(filepath)
+    return __read_hdd_data(filepath, max_normal_samples, max_anomalous_samples)

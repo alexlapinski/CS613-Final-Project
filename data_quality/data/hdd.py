@@ -28,16 +28,15 @@ def get_filenames(data_directory=None):
             and os.path.splitext(f)[1] == '.csv']
 
 
-def read_training_data(filepaths):
-    training_dataframes = []
+def read_files(filepaths):
+    dataframes = []
     for data_filepath in filepaths:
         data = read_file(data_filepath)
         print 'Read {0} samples from "{1}"'.format(len(data), data_filepath)
 
-        training_dataframes.append(data)
-    training_data = pd.concat(training_dataframes)
-    print "Read {0} total training samples".format(training_data.size)
-    return training_data
+        dataframes.append(data)
+    final_data = pd.concat(dataframes)
+    return final_data
 
 
 def label_data(dataframe):
@@ -110,20 +109,22 @@ def process_hdd(name='hdd'):
 
     data_filepaths = get_filenames()
 
-    # Select the last file as our test data, all others are training data
-    training_data_filepaths = data_filepaths[:-1]
-    test_data_filepath = data_filepaths[-1]
+    # Select the first half our test data, all others are training data
+    half = len(data_filepaths) / 2
+    training_data_filepaths = data_filepaths[:half]
+    test_data_filepaths = data_filepaths[half:]
 
     training_output_filepath = os.path.join('data', 'processed', '{0}_training.csv'.format(name))
     test_output_filepath = os.path.join('data', 'processed', '{0}_test.csv'.format(name))
 
     print 'Processing the "{0}" dataset'.format(name)
     # Process Training Data
-    training_data = read_training_data(training_data_filepaths)
+    training_data = read_files(training_data_filepaths)
+    print 'Read {0} training samples from "{1}"'.format(len(training_data), training_data_filepaths)
 
     # Process Test Data
-    test_data = read_file(test_data_filepath)
-    print 'Read {0} test samples from "{1}"'.format(test_data.size, test_data_filepath)
+    test_data = read_files(test_data_filepaths)
+    print 'Read {0} test samples from "{1}"'.format(len(test_data), test_data_filepaths)
 
     # Exclude some columns (zero std)
     valid_columns = filter_columns(training_data.columns)
